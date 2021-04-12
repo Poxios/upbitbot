@@ -23,7 +23,8 @@ BETTING_BUDGET = 10000  # 코인별 최대 1만원
 MAX_NUM_COIN = 4  # 하루 최대 코인 4개 투자
 SPREAD_GAP = 0.002
 PARAM = 0.5
-THRESHOLD = 0.5
+
+NUM_MOST_UPWARD = 3
 
 # API 초기화
 upbit = Upbit(UPBIT_API_KEY, UPBIT_SEC_KEY)
@@ -171,8 +172,7 @@ if __name__ == '__main__':
     print('[INFO] betting_ratio: %s'%coin_betting_ratio)
 
     trade_markets = sorted(list(
-        filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))[-int(THRESHOLD*len(list(
-            filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))):]
+        filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))[-NUM_MOST_UPWARD:]
 
     print('[INFO] Trading markets selected: %s' % (trade_markets))
 
