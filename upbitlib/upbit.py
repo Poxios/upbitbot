@@ -42,7 +42,7 @@ class Upbit(object):
             response = s.send(prepped)
             if response.content == b'Too many API requests.':
                 print('Too many API requests.')
-            print(response.content)
+            # print(response.content)
             # time.sleep(0.5)
         return response.json() if response.status_code == 200 or response.status_code == 201 else None
 
