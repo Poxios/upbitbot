@@ -1,2 +1,4 @@
 .git/
 upbit-env/
+.history/
+auth.json

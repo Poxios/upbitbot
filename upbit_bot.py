@@ -2,10 +2,18 @@ import time
 from datetime import datetime
 from upbitlib.upbit import Upbit
 from pytz import timezone
+import json
 
 # 업비트 기반 변동성 돌파 전략 https://m.post.naver.com/viewer/postView.nhn?volumeNo=15975365&memberNo=40921089
-UPBIT_API_KEY = ''  # 업비트에서 발급 받은 Key 입력
-UPBIT_SEC_KEY = ''  # 업비트에서 발급 받은 Secret 입력
+
+with open('auth.json', 'r') as f:
+    auth_dict = json.load(f)
+
+assert auth_dict.get('access_key') != None and auth_dict.get('secret_key') != None
+
+UPBIT_API_KEY = auth_dict['access_key']  # 업비트에서 발급 받은 Key 입력
+UPBIT_SEC_KEY = auth_dict['secret_key']  # 업비트에서 발급 받은 Secret 입력
+
 SELECTED_COINS = ['BTC', 'ETH', 'XRP', 'ETC', 'OMG', 'ZEC', 'XMR', 'XLM', 'ADA',
                   'EOS', 'ONT', 'MFT', 'BAT', 'LOOM', 'BCH', 'ZIL', 'IOST']
 GROWING_PERIOD = 5  # 5 days
