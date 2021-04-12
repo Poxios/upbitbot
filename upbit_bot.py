@@ -136,23 +136,35 @@ def dump_all():
 
 if __name__ == '__main__':
     trade_markets = list(candidate_coins())
+    
+    print('[INFO] Market candidates: %s'%trade_markets)
+    
     already_buy = {}
     coin_noise = {}
     coin_betting_ratio = {}
     coin_investable = MAX_NUM_COIN
 
+    print("[INFO] Fetching market noise, betting ratio information from UPbit...")
     for market in trade_markets:
         try:
             coin_noise[market] = get_market_noise(market)
             coin_betting_ratio[market] = get_betting_ratio(market)
         except Exception as e:
-            print(e)
-            print('SKIPPING %s' %(market))
-
+            trade_markets.remove(market)
+            print('[WARNING] Removing market %s'%market)
+    
+    valid_markets = set.intersection(set(coin_noise.keys()), set(coin_betting_ratio.keys()), set(trade_markets))
+    
+    coin_noise = {k: coin_noise[k] for k in valid_markets}
+    coin_betting_ratio = {k: coin_betting_ratio[k] for k in valid_markets}
+    trade_markets = [i for i in trade_markets if i in valid_markets]
+    
+    print('[INFO] Valid markets selected: %s'%(trade_markets))
     trade_markets = sorted(list(
         filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))[-int(THRESHOLD*len(list(
             filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))):]
 
+    print('[INFO] Starting trade loop:')
     while True:
         for market in trade_markets:
             if market in already_buy:
