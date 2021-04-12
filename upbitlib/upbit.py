@@ -11,6 +11,7 @@ PROTOCOL = 'https'
 HOST = 'api.upbit.com'
 VERSION = 'v1'
 
+
 class Upbit(object):
     """
     Python wrapper for the Upbit API
@@ -27,17 +28,20 @@ class Upbit(object):
             url = '{0:s}{1:s}'.format(self.host_url, path)
             if authorization:
                 payload = {
-                        'access_key': self.access_key,
-                        'nonce': str(int(time.time() * 1000))
+                    'access_key': self.access_key,
+                    'nonce': str(int(time.time() * 1000))
                 }
                 if query_params is not None:
                     payload['query'] = query_params
                     url = '{0:s}?{1:s}'.format(url, query_params)
                 token = jwt.encode(payload, self.secret_key, algorithm='HS256')
+
                 headers['Authorization'] = 'Bearer {0:s}'.format(token)
+
                 req = requests.Request(method, url, headers=headers)
             else:
-                req = requests.Request(method, url, headers=headers, params=query_params)
+                req = requests.Request(
+                    method, url, headers=headers, params=query_params)
             prepped = s.prepare_request(req)
             response = s.send(prepped)
             
@@ -48,12 +52,14 @@ class Upbit(object):
             
         return response.json() if response.status_code == 200 or response.status_code == 201 else None
 
-    def get_markets(self):
-        return self.__api_query(path='market/all', method='get')
+    def get_markets(self, isDetails=True):
+        query_params = urlencode({'isDetails': isDetails})
+        return self.__api_query(path='market/all', method='get', query_params=query_params)
 
     def get_candles_per_minutes(self, minute, market, to='', count=1, cursor=0):
         if minute not in {1, 3, 5, 15, 10, 30, 60, 240}:
-            raise Exception('{0:d}-minute interval is not available.'.format(minute))
+            raise Exception(
+                '{0:d}-minute interval is not available.'.format(minute))
         query_params = {'market': market,
                         'to': to,
                         'count': count,
@@ -142,4 +148,3 @@ class Upbit(object):
     def withdraw_krw(self, amount):
         query_params = urlencode({'amount': amount})
         return self.__api_query(authorization=True, path='withdraws/krw', method='post', query_params=query_params)
-
