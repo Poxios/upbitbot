@@ -9,13 +9,14 @@ import json
 with open('auth.json', 'r') as f:
     auth_dict = json.load(f)
 
-assert auth_dict.get('access_key') != None and auth_dict.get('secret_key') != None
+assert auth_dict.get('access_key') != None and auth_dict.get(
+    'secret_key') != None
 
 UPBIT_API_KEY = auth_dict['access_key']  # 업비트에서 발급 받은 Key 입력
 UPBIT_SEC_KEY = auth_dict['secret_key']  # 업비트에서 발급 받은 Secret 입력
 
-SELECTED_COINS = ['BTC', 'ETH', 'XRP', 'ETC', 'OMG', 'ZEC', 'XMR', 'XLM', 'ADA',
-                  'EOS', 'ONT', 'MFT', 'BAT', 'LOOM', 'BCH', 'ZIL', 'IOST']
+SELECTED_COINS = ["BTC", "ETH", "NEO", "MTL", "LTC", "XRP", "ETC", "OMG", "SNT", "WAVES", "XEM", "QTUM", "LSK", "STEEM", "XLM", "ARDR", "KMD", "ARK", "STORJ", "GRS", "REP", "EMC2", "ADA", "SBD", "POWR", "BTG", "ICX", "EOS", "TRX", "SC", "IGNIS", "ONT", "ZIL", "POLY", "ZRX", "LOOM", "BCH", "ADX", "BAT", "IOST", "DMT", "RFR", "CVC", "IQ", "IOTA", "MFT", "ONG", "GAS", "UPP", "ELF", "KNC", "BSV", "THETA", "EDR", "QKC", "BTT", "MOC", "ENJ", "TFUEL",
+                  "MANA", "ANKR", "AERGO", "ATOM", "TT", "CRE", "SOLVE", "MBL", "TSHP", "WAXP", "HBAR", "MED", "MLK", "STPT", "ORBS", "VET", "CHZ", "PXL", "STMX", "DKA", "HIVE", "KAVA", "AHT", "LINK", "XTZ", "BORA", "JST", "CRO", "TON", "SXP", "LAMB", "HUNT", "MARO", "PLA", "DOT", "SRM", "MVL", "PCI", "STRAX", "AQT", "BCHA", "GLM", "QTCON", "SSX", "META", "OBSR", "FCT2", "LBC", "CBK", "SAND", "HUM", "DOGE", "STRK", "PUNDIX", "FLOW", "DAWN", "AXS", "STX"]
 GROWING_PERIOD = 5  # 5 days
 BETTING_BUDGET = 10000  # 코인별 최대 1만원
 MAX_NUM_COIN = 4  # 하루 최대 코인 4개 투자
@@ -136,9 +137,9 @@ def dump_all():
 
 if __name__ == '__main__':
     trade_markets = list(candidate_coins())
-    
-    print('[INFO] Market candidates: %s'%trade_markets)
-    
+
+    print('[INFO] Market candidates: %s' % trade_markets)
+
     already_buy = {}
     coin_noise = {}
     coin_betting_ratio = {}
@@ -151,15 +152,16 @@ if __name__ == '__main__':
             coin_betting_ratio[market] = get_betting_ratio(market)
         except Exception as e:
             trade_markets.remove(market)
-            print('[WARNING] Removing market %s'%market)
-    
-    valid_markets = set.intersection(set(coin_noise.keys()), set(coin_betting_ratio.keys()), set(trade_markets))
-    
+            print('[WARNING] Removing market %s' % market)
+
+    valid_markets = set.intersection(set(coin_noise.keys()), set(
+        coin_betting_ratio.keys()), set(trade_markets))
+
     coin_noise = {k: coin_noise[k] for k in valid_markets}
     coin_betting_ratio = {k: coin_betting_ratio[k] for k in valid_markets}
     trade_markets = [i for i in trade_markets if i in valid_markets]
-    
-    print('[INFO] Valid markets selected: %s'%(trade_markets))
+
+    print('[INFO] Valid markets selected: %s' % (trade_markets))
     trade_markets = sorted(list(
         filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))[-int(THRESHOLD*len(list(
             filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))):]
