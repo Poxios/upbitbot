@@ -12,7 +12,8 @@ GROWING_PERIOD = 5  # 5 days
 BETTING_BUDGET = 10000  # 코인별 최대 1만원
 MAX_NUM_COIN = 4  # 하루 최대 코인 4개 투자
 SPREAD_GAP = 0.002
-
+PARAM = 0.5
+THRESHOLD = 0.5
 
 # API 초기화
 upbit = Upbit(UPBIT_API_KEY, UPBIT_SEC_KEY)
@@ -32,7 +33,8 @@ def is_growing_market(market):
 
 def get_market_noise(market):
     prices = upbit.get_candles_daily(market, '', 20)[1:]
-    price_noise = list(map(lambda p: 1 - abs(p['trade_price'] - p['opening_price']) / (p['high_price'] - p['low_price']), prices))
+    price_noise = list(map(lambda p: 1 - abs(p['trade_price'] - p['opening_price']) / (
+        p['high_price'] - p['low_price']), prices))
     return sum(price_noise) / len(price_noise)
 
 
@@ -135,7 +137,9 @@ if __name__ == '__main__':
         coin_noise[market] = get_market_noise(market)
         coin_betting_ratio[market] = get_betting_ratio(market)
 
-    trade_markets = list(filter(lambda m: coin_betting_ratio[m] > 0, trade_markets))
+    trade_markets = sorted(list(
+        filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))[-int(THRESHOLD*len(list(
+            filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))):]
 
     while True:
         for market in trade_markets:
@@ -145,14 +149,15 @@ if __name__ == '__main__':
             if coin_investable <= 0:
                 break
 
-            candles = upbit.get_candles_daily(market, '', 2)  # Today, Yesterday
+            candles = upbit.get_candles_daily(
+                market, '', 2)  # Today, Yesterday
 
             _range = candles[1]['high_price'] - candles[1]['low_price']
 
             today_opening = candles[0]['opening_price']
             today_current = candles[0]['trade_price']
 
-            k = _range * coin_noise[market] * 0.5
+            k = _range * coin_noise[market] * PARAM
 
             over_ratio = today_current / (today_opening + k)
 
