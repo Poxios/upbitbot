@@ -166,6 +166,8 @@ if __name__ == '__main__':
         filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))[-int(THRESHOLD*len(list(
             filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))):]
 
+    print('[INFO] Trading markets selected: %s' % (trade_markets))
+
     print('[INFO] Starting trade loop:')
     while True:
         for market in trade_markets:
