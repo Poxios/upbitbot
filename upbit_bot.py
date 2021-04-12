@@ -20,7 +20,7 @@ SELECTED_COINS = ["BTC", "ETH", "NEO", "MTL", "LTC", "XRP", "ETC", "OMG", "SNT",
                   "MANA", "ANKR", "AERGO", "ATOM", "TT", "CRE", "SOLVE", "MBL", "TSHP", "WAXP", "HBAR", "MED", "MLK", "STPT", "ORBS", "VET", "CHZ", "PXL", "STMX", "DKA", "HIVE", "KAVA", "AHT", "LINK", "XTZ", "BORA", "JST", "CRO", "TON", "SXP", "LAMB", "HUNT", "MARO", "PLA", "DOT", "SRM", "MVL", "PCI", "STRAX", "AQT", "BCHA", "GLM", "QTCON", "SSX", "META", "OBSR", "FCT2", "LBC", "CBK", "SAND", "HUM", "DOGE", "STRK", "PUNDIX", "FLOW", "DAWN", "AXS", "STX"]
 GROWING_PERIOD = 5  # 5 days
 BETTING_BUDGET = 10000  # 코인별 최대 1만원
-MAX_NUM_COIN = 4  # 하루 최대 코인 4개 투자
+MAX_NUM_COIN = 3  # 하루 최대 코인 4개 투자
 SPREAD_GAP = 0.002
 PARAM = 0.5
 
@@ -200,7 +200,7 @@ if __name__ == '__main__':
                 over_ratio = today_current / (today_opening + k)
                 print("[INFO] [%s] over_ratio: %s"%(market, over_ratio))
 
-                if over_ratio > 0.92:
+                if over_ratio > 1:
                     buy_result = buy(market, BETTING_BUDGET * coin_betting_ratio[market])
                     
                     if buy_result != None:
