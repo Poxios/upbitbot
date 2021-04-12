@@ -142,8 +142,12 @@ if __name__ == '__main__':
     coin_investable = MAX_NUM_COIN
 
     for market in trade_markets:
-        coin_noise[market] = get_market_noise(market)
-        coin_betting_ratio[market] = get_betting_ratio(market)
+        try:
+            coin_noise[market] = get_market_noise(market)
+            coin_betting_ratio[market] = get_betting_ratio(market)
+        except Exception as e:
+            print(e)
+            print('SKIPPING %s' %(market))
 
     trade_markets = sorted(list(
         filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))[-int(THRESHOLD*len(list(

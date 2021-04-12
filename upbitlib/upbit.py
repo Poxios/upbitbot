@@ -40,7 +40,11 @@ class Upbit(object):
                 req = requests.Request(method, url, headers=headers, params=query_params)
             prepped = s.prepare_request(req)
             response = s.send(prepped)
-        return response.json() if response.status_code is 200 or response.status_code is 201 else None
+            if response.content == b'Too many API requests.':
+                print('Too many API requests.')
+            print(response.content)
+            # time.sleep(0.5)
+        return response.json() if response.status_code == 200 or response.status_code == 201 else None
 
     def get_markets(self):
         return self.__api_query(path='market/all', method='get')
