@@ -4,6 +4,7 @@ from datetime import datetime
 from upbitlib.upbit import Upbit
 from pytz import timezone
 import json
+from tqdm import tqdm
 
 # 업비트 기반 변동성 돌파 전략 https://m.post.naver.com/viewer/postView.nhn?volumeNo=15975365&memberNo=40921089
 
@@ -18,7 +19,7 @@ UPBIT_SEC_KEY = auth_dict['secret_key']  # 업비트에서 발급 받은 Secret 
 
 SELECTED_COINS = ["BTC", "ETH", "NEO", "MTL", "LTC", "XRP", "ETC", "OMG", "SNT", "WAVES", "XEM", "QTUM", "LSK", "STEEM", "XLM", "ARDR", "KMD", "ARK", "STORJ", "GRS", "REP", "EMC2", "ADA", "SBD", "POWR", "BTG", "ICX", "EOS", "TRX", "SC", "IGNIS", "ONT", "ZIL", "POLY", "ZRX", "LOOM", "BCH", "ADX", "BAT", "IOST", "DMT", "RFR", "CVC", "IQ", "IOTA", "MFT", "ONG", "GAS", "UPP", "ELF", "KNC", "BSV", "THETA", "EDR", "QKC", "BTT", "MOC", "ENJ", "TFUEL",
                   "MANA", "ANKR", "AERGO", "ATOM", "TT", "CRE", "SOLVE", "MBL", "TSHP", "WAXP", "HBAR", "MED", "MLK", "STPT", "ORBS", "VET", "CHZ", "PXL", "STMX", "DKA", "HIVE", "KAVA", "AHT", "LINK", "XTZ", "BORA", "JST", "CRO", "TON", "SXP", "LAMB", "HUNT", "MARO", "PLA", "DOT", "SRM", "MVL", "PCI", "STRAX", "AQT", "BCHA", "GLM", "QTCON", "SSX", "META", "OBSR", "FCT2", "LBC", "CBK", "SAND", "HUM", "DOGE", "STRK", "PUNDIX", "FLOW", "DAWN", "AXS", "STX"]
-GROWING_PERIOD = 5  # 5 days
+# GROWING_PERIOD = 5  # 5 days
 BETTING_BUDGET = 10000  # 코인별 최대 1만원
 MAX_NUM_COIN = 3  # 하루 최대 코인 4개 투자
 SPREAD_GAP = 0.002
@@ -37,9 +38,9 @@ def candidate_coins():
     return filter(lambda x: x.startswith('KRW'), candidate_coin)
 
 
-def is_growing_market(market):
-    prices = upbit.get_candles_daily(market, '', GROWING_PERIOD)
-    return prices[0]['trade_price'] > prices[-1]['trade_price']
+# def is_growing_market(market):
+#     prices = upbit.get_candles_daily(market, '', GROWING_PERIOD)
+#     return prices[0]['trade_price'] > prices[-1]['trade_price']
 
 
 def get_market_noise(market):
@@ -152,7 +153,7 @@ if __name__ == '__main__':
         coin_investable = MAX_NUM_COIN
 
         print("[INFO] Fetching market noise, betting ratio information from UPbit...")
-        for market in trade_markets:
+        for market in tqdm(trade_markets):
             try:
                 coin_noise[market] = get_market_noise(market)
                 coin_betting_ratio[market] = get_betting_ratio(market)
