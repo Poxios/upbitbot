@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 import time
 from datetime import datetime
 from upbitlib.upbit import Upbit
@@ -95,6 +96,7 @@ def buy(market, budget):
         amount = budget / last_price
 
         result = upbit.place_order(market, 'bid', amount, last_price)
+
         if result and result['uuid']:
             for i in range(5):
                 order_info = upbit.get_order(result['uuid'])
@@ -103,6 +105,8 @@ def buy(market, budget):
                 time.sleep(1)
 
             upbit.cancel_order(result['uuid'])
+            
+    return result
 
 
 def sell(market, amount):
@@ -151,6 +155,7 @@ if __name__ == '__main__':
             coin_noise[market] = get_market_noise(market)
             coin_betting_ratio[market] = get_betting_ratio(market)
         except Exception as e:
+            print(e)
             trade_markets.remove(market)
             print('[WARNING] Removing market %s' % market)
 
@@ -160,8 +165,11 @@ if __name__ == '__main__':
     coin_noise = {k: coin_noise[k] for k in valid_markets}
     coin_betting_ratio = {k: coin_betting_ratio[k] for k in valid_markets}
     trade_markets = [i for i in trade_markets if i in valid_markets]
+    
+    print('[INFO] Valid markets selected: %s'%(trade_markets))
+    print('[INFO] noise: %s'%coin_noise)
+    print('[INFO] betting_ratio: %s'%coin_betting_ratio)
 
-    print('[INFO] Valid markets selected: %s' % (trade_markets))
     trade_markets = sorted(list(
         filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))[-int(THRESHOLD*len(list(
             filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))):]
@@ -170,6 +178,7 @@ if __name__ == '__main__':
 
     print('[INFO] Starting trade loop:')
     while True:
+        print("While loop")
         for market in trade_markets:
             if market in already_buy:
                 continue
@@ -188,12 +197,18 @@ if __name__ == '__main__':
             k = _range * coin_noise[market] * PARAM
 
             over_ratio = today_current / (today_opening + k)
+            print("[INFO] [%s] over_ratio: %s"%(market, over_ratio))
 
-            if over_ratio > 1.0:
-                buy(market, BETTING_BUDGET * coin_betting_ratio[market])
-                already_buy[market] = True
-                coin_investable -= 1
-                # 만약 현재 시가 기준으로 전날 등락폭 대비해서 올랐으면 사자
+            if over_ratio > 0.92:
+                buy_result = buy(market, BETTING_BUDGET * coin_betting_ratio[market])
+                
+                if buy_result != None:
+                    already_buy[market] = True
+                    coin_investable -= 1
+                    # 만약 현재 시가 기준으로 전날 등락폭 대비해서 올랐으면 사자
+                else:
+                    print("[ERROR] Error while buying")
+                
 
         time.sleep(1)
 
