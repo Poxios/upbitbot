@@ -4,4 +4,3 @@ simplejson
 telepot
 tendo
 pytz
-jwt
