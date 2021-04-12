@@ -141,78 +141,82 @@ def dump_all():
 
 
 if __name__ == '__main__':
-    trade_markets = list(candidate_coins())
-
-    print('[INFO] Market candidates: %s' % trade_markets)
-
-    already_buy = {}
-    coin_noise = {}
-    coin_betting_ratio = {}
-    coin_investable = MAX_NUM_COIN
-
-    print("[INFO] Fetching market noise, betting ratio information from UPbit...")
-    for market in trade_markets:
-        try:
-            coin_noise[market] = get_market_noise(market)
-            coin_betting_ratio[market] = get_betting_ratio(market)
-        except Exception as e:
-            print(e)
-            trade_markets.remove(market)
-            print('[WARNING] Removing market %s' % market)
-
-    valid_markets = set.intersection(set(coin_noise.keys()), set(
-        coin_betting_ratio.keys()), set(trade_markets))
-
-    coin_noise = {k: coin_noise[k] for k in valid_markets}
-    coin_betting_ratio = {k: coin_betting_ratio[k] for k in valid_markets}
-    trade_markets = [i for i in trade_markets if i in valid_markets]
-    
-    print('[INFO] Valid markets selected: %s'%(trade_markets))
-    print('[INFO] noise: %s'%coin_noise)
-    print('[INFO] betting_ratio: %s'%coin_betting_ratio)
-
-    trade_markets = sorted(list(
-        filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)))[-NUM_MOST_UPWARD:]
-
-    print('[INFO] Trading markets selected: %s' % (trade_markets))
-
-    print('[INFO] Starting trade loop:')
     while True:
-        print("While loop")
+        trade_markets = list(candidate_coins())
+
+        print('[INFO] Market candidates: %s' % trade_markets)
+
+        already_buy = {}
+        coin_noise = {}
+        coin_betting_ratio = {}
+        coin_investable = MAX_NUM_COIN
+
+        print("[INFO] Fetching market noise, betting ratio information from UPbit...")
         for market in trade_markets:
-            if market in already_buy:
-                continue
+            try:
+                coin_noise[market] = get_market_noise(market)
+                coin_betting_ratio[market] = get_betting_ratio(market)
+            except Exception as e:
+                print(e)
+                trade_markets.remove(market)
+                print('[WARNING] Removing market %s' % market)
 
-            if coin_investable <= 0:
+        valid_markets = set.intersection(set(coin_noise.keys()), set(
+            coin_betting_ratio.keys()), set(trade_markets))
+
+        coin_noise = {k: coin_noise[k] for k in valid_markets}
+        coin_betting_ratio = {k: coin_betting_ratio[k] for k in valid_markets}
+        trade_markets = [i for i in trade_markets if i in valid_markets]
+        
+        print('[INFO] Valid markets selected: %s'%(trade_markets))
+        print('[INFO] noise: %s'%coin_noise)
+        print('[INFO] betting_ratio: %s'%coin_betting_ratio)
+
+        trade_markets = sorted(list(
+            filter(lambda m: coin_betting_ratio[m] > 0, trade_markets)), key=lambda x:coin_betting_ratio[x])[-NUM_MOST_UPWARD:]
+
+        print('[INFO] Trading markets selected: %s' % (trade_markets))
+
+        print('[INFO] Starting trade loop:')
+        while True:
+            print("While loop")
+            for market in trade_markets:
+                if market in already_buy:
+                    continue
+
+                if coin_investable <= 0:
+                    break
+
+                candles = upbit.get_candles_daily(
+                    market, '', 2)  # Today, Yesterday
+
+                _range = candles[1]['high_price'] - candles[1]['low_price']
+
+                today_opening = candles[0]['opening_price']
+                today_current = candles[0]['trade_price']
+
+                k = _range * coin_noise[market] * PARAM
+
+                over_ratio = today_current / (today_opening + k)
+                print("[INFO] [%s] over_ratio: %s"%(market, over_ratio))
+
+                if over_ratio > 0.92:
+                    buy_result = buy(market, BETTING_BUDGET * coin_betting_ratio[market])
+                    
+                    if buy_result != None:
+                        already_buy[market] = True
+                        coin_investable -= 1
+                        # 만약 현재 시가 기준으로 전날 등락폭 대비해서 올랐으면 사자
+                    else:
+                        print("[ERROR] Error while buying")
+                    
+
+            time.sleep(1)
+
+            t = datetime.now(timezone('Asia/Seoul'))
+            if t.hour == 23 and t.minute > 45:  # 저녁 12시 전에 판매 한다.
+                dump_all()
+                while datetime.now(timezone('Asia/Seoul')).hour == 23:
+                    time.sleep(10)
+                    print("[SLEEP] Waiting until 00:00 after dumping..")
                 break
-
-            candles = upbit.get_candles_daily(
-                market, '', 2)  # Today, Yesterday
-
-            _range = candles[1]['high_price'] - candles[1]['low_price']
-
-            today_opening = candles[0]['opening_price']
-            today_current = candles[0]['trade_price']
-
-            k = _range * coin_noise[market] * PARAM
-
-            over_ratio = today_current / (today_opening + k)
-            print("[INFO] [%s] over_ratio: %s"%(market, over_ratio))
-
-            if over_ratio > 0.92:
-                buy_result = buy(market, BETTING_BUDGET * coin_betting_ratio[market])
-                
-                if buy_result != None:
-                    already_buy[market] = True
-                    coin_investable -= 1
-                    # 만약 현재 시가 기준으로 전날 등락폭 대비해서 올랐으면 사자
-                else:
-                    print("[ERROR] Error while buying")
-                
-
-        time.sleep(1)
-
-        t = datetime.now(timezone('Asia/Seoul'))
-        if t.hour == 23 and t.minute > 45:  # 저녁 12시 전에 판매 한다.
-            dump_all()
-            exit(0)
